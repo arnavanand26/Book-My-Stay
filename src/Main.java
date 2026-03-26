@@ -1,50 +1,58 @@
-// Custom exception class for invalid passenger bogie capacity
-class InvalidCapacityException extends Exception {
-  public InvalidCapacityException(String message) {
-    super(message);
+import java.util.*;
+
+class Service {
+  String name;
+  double cost;
+
+  Service(String name, double cost) {
+    this.name = name;
+    this.cost = cost;
   }
 }
 
-// Passenger bogie class with capacity validation
-class PassengerBogie {
-  private String type;
-  private int capacity;
-
-  // Constructor enforces fail-fast validation
-  public PassengerBogie(String type, int capacity) throws InvalidCapacityException {
-    if (capacity <= 0) {
-      throw new InvalidCapacityException("Capacity must be greater than zero");
-    }
-    this.type = type;
-    this.capacity = capacity;
-  }
-
-  // Getters
-  public String getType() {
-    return type;
-  }
-
-  public int getCapacity() {
-    return capacity;
-  }
-
-  @Override
-  public String toString() {
-    return "PassengerBogie{" +
-            "type='" + type + '\'' +
-            ", capacity=" + capacity +
-            '}';
-  }
-}
-
-// Example usage
 public class Main {
-  public static void main(String[] args) {
-    try {
-      PassengerBogie sleeper = new PassengerBogie("Sleeper", 72);
-      PassengerBogie acChair = new PassengerBogie("AC Chair", 0); // This will throw exception
-    } catch (InvalidCapacityException e) {
-      System.out.println("Error creating bogie: " + e.getMessage());
+
+  Map<String, List<Service>> reservationServices = new HashMap<>();
+
+  public void addService(String reservationId, Service service) {
+    reservationServices.putIfAbsent(reservationId, new ArrayList<>());
+    reservationServices.get(reservationId).add(service);
+  }
+
+  public double calculateTotalCost(String reservationId) {
+    double total = 0;
+    List<Service> services = reservationServices.get(reservationId);
+    if (services != null) {
+      for (Service s : services) {
+        total += s.cost;
+      }
     }
+    return total;
+  }
+
+  public void displayServices(String reservationId) {
+    List<Service> services = reservationServices.get(reservationId);
+    if (services == null) {
+      System.out.println("No services selected");
+      return;
+    }
+
+    for (Service s : services) {
+      System.out.println(s.name + " - " + s.cost);
+    }
+
+    System.out.println("Total Add-On Cost: " + calculateTotalCost(reservationId));
+  }
+
+  public static void main(String[] args) {
+    Main manager = new Main();
+
+    String reservationId = "R101";
+
+    manager.addService(reservationId, new Service("Breakfast", 500));
+    manager.addService(reservationId, new Service("Airport Pickup", 1200));
+    manager.addService(reservationId, new Service("Spa Access", 2000));
+
+    manager.displayServices(reservationId);
   }
 }
